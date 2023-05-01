@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset=utf-8 />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Don't call it a comeback</title>
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+    <style>
+        
+        .dot {
+  height: 25px;
+  width: 25px;
+  background-color: orange;
+  border-radius: 50%;
+  display: inline-block;
+}
+             .dota {
+  height: 25px;
+  width: 25px;
+  background-color: yellow;
+  border-radius: 50%;
+  display: inline-block;
+}
+             .dotb {
+  height: 25px;
+  width: 25px;
+  background-color: #F32013;
+  border-radius: 50%;
+  display: inline-block;
+}
+        
+        green {
+            color: #F32013
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background: whitesmoke;
+            font-family: Lato, sans-serif;
+            color: #0D0000;
+        }
+        header {
+            padding: 6px 10%;
+        }
+        h1 {
+            display: inline-block;
+            margin-right: 20px;
+            color: #001323;
+        }
+        h2 {
+            display: inline-block;
+            color: #001323;
+        }
+       html, body, #map {
+    height: 100%;
+    width: 100vw;
+}
+        
+        footer {
+            padding: 6px 10%;
+            width: 80%;
+        }
+        p {
+            font-size: 1em;
+            color: #001323;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div style="overflow: hidden;">
+   <p></p> <p> <b>Covid Cases Around the World<b> <br> <i> Click any circle for more information</i> <br>          <span class="dot"></span> <i>Over <u>10,000</u>  Cases</i>  <span class="dota"></span> <i>Over <u>100,000</u>  Cases</i>    <span class="dotb"></span> <i>Over <u>1,000,000</u>  Cases</i>   </p></p>
+</div>
+        <h2></h2>
+    </header>
+
+    <div id='map'></div>
+
+    <footer>
+        <p><span class="dot"></span> <i>Over <u>100</u>  Cases</i>  <span class="dota"></span> <i>Over <u>1,000</u>  Cases</i>    <span class="dotb"></span> <i>Over <u>10,000</u>  Cases</i>   </p>
+       <div style="overflow: hidden;">
+    <p style="float: left;">Map created by Penny Retica</p> 
+    <p style="float: right;">Data Source: Johns Hopkins CSSE Report</p>
+</div>
+
+    </footer>
+
+    <script src="WHO-COVID-19-global-table-data.js"></script>
+    <script>
+// above me is where GeoJSON data is incorporated (_x_CHANGE FILE TO COVID DEATHS)
+      var map = L.map('map', {
+          center: [50,-10],
+          zoom: 2.5,
+      });
+      
+    var tiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+	subdomains: 'abcd',
+	maxZoom: 20
+}); 
+      
+      tiles.addTo(map);
+        
+    
+    // geoJSON method (does not end until line 128)
+      L.geoJson(countries, {
+        //STYLING geoJSON DATA
+          pointToLayer: function(feature,latlng) {
+              console.log(feature.properties)
+              return L.circleMarker(latlng, {
+                 color: '#e5f5e0',
+                 weight: 2,
+                 fillColor: '#31a354',
+                 fillOpacity: .5,
+                 radius: getRadius(feature.properties.Deaths_cumulative_total) //step4
+              });   
+          },
+    // SELECTING geoJSON DATA -- don't think I need this for my task
+      /*filter : function(feature, layer){
+              if(feature.properties.fuel_source.Nuclear){
+                  return true
+              };
+             console.log(feature);
+          },*/
+         
+    // USER INTERACTIVITY WITH geoJSON DATA 
+    onEachFeature : function(feature,layer) {
+    layer.on('mouseover', function() {
+    layer.setStyle({
+        //calling function to get corresponding color depending on num deaths
+        fillColor: getColor(feature.properties.Deaths_cumulative_total)
+    });
+});
+layer.on('mouseout', function() {
+    layer.setStyle({
+        fillColor: '#31a354'
+    });
+});
+
+          //step 6  
+          
+          var name = feature.properties.Name
+          var numDeaths = feature.properties.Deaths_cumulative_total.toLocaleString()
+                                                
+          // making popup with name of country and number of covid deaths
+          var popup = ("<b>"+name+"</b><br>"
+              +numDeaths+ " deaths" + "<br>")
+                       layer.bindPopup(popup)
+          }
+          
+          
+      }).addTo(map);
+
+        function getRadius(area){
+        var radius = Math.sqrt(area/Math.PI);
+        return radius *.1
+        }
+        
+        function getColor(deaths){
+            var color
+            if (deaths > 10000) {
+                color = 'orange'
+            }
+            if (deaths > 100000) {
+                color = 'yellow'
+            }
+            if (deaths > 1000000) {
+                color = 'red'
+            }
+            return color
+        }
+          
+    </script>
+    
+</body>
+
+</html>
